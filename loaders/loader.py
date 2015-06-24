@@ -34,7 +34,7 @@ def load_data(data_type, month):
 
 
 def load_from_db(db, collection, field_names, field_types):
-	with Monary("127.0.0.1") as monary:
+	with Monary("obama.imm.dtu.dk") as monary:
 		arrays = monary.query(
 			db,  # database name
 			collection,  # collection name
