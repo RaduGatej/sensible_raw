@@ -1,10 +1,11 @@
 import json
+import os
 from monary import Monary
 
 
 def load_config(config_path=None):
 	if not config_path:
-		config_path = "~/.sensible_raw/loader_config.json"
+		config_path = os.path.expanduser("~") + "/.sensible_raw/loader_config.json"
 
 	return json.loads(open(config_path, "r").read())
 
