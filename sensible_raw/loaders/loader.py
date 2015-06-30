@@ -1,7 +1,7 @@
 import json
 import os
 from monary import Monary
-
+import pandas
 
 def load_config(config_path=None):
 	if not config_path:
@@ -21,7 +21,7 @@ def load_data(data_type, month, config=None):
 
 
 def load_from_db(db, collection, field_names, field_types, db_host):
-	with Monary(host=db_host["hostname"], username=db_host["username"], password=db_host["password"], database=db) as monary:
+	with Monary(host=db_host["hostname"], username=db_host["username"], password=db_host["password"], database="admin") as monary:
 		arrays = monary.query(
 			db,  # database name
 			collection,  # collection name
