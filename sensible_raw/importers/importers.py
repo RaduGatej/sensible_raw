@@ -10,12 +10,34 @@ class Importer(object):
 			self.mapper = getattr(helpers, config["mapper"])()
 		except:
 			self.mapper = None
+
+		try:
+			self.row_expander = getattr(helpers, config["expander"])()
+		except:
+			self.row_expander = None
 		self.after = None
 
 	def process_row(self, row):
 		if self.mapper:
 			row = self.mapper.map(row)
+		if self.expand_row(row):
+			return
+
 		self.local_db.insert_row(self.indexer.index_fields(row))
+
+	def expand_row(self, main_row):
+		if self.row_expander:
+			expanded_row = []
+			try:
+				expanded_row = self.row_expander.expand(main_row)
+			except:
+				return False
+
+			for row in expanded_row:
+				self.process_row(row)
+
+			return True
+		return False
 
 	def import_data(self):
 		self.remote_db.query_database(self.process_row, after=self.after)

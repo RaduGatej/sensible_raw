@@ -1,3 +1,4 @@
+import base64
 from collections import defaultdict
 import json
 import logging
@@ -147,3 +148,19 @@ class PhoneNumberMapper(object):
 			return row
 		row["number"] = self.phone_book.get(row["number"])
 		return row
+
+
+class AccelerometerDataRowExpander(object):
+	def expand(self, main_row):
+		rows = []
+		expanded_x = base64.b64decode(main_row["x"]).split(",")
+		expanded_y = base64.b64decode(main_row["y"]).split(",")
+		expanded_z = base64.b64decode(main_row["z"]).split(",")
+		expanded_event_timestamp = base64.b64decode(main_row["event_timestamp"]).split(",")
+		expanded_accuracy = base64.b64decode(main_row["accuracy"]).split(",")
+
+		for x, y, z, event_timestamp, accuracy in zip(expanded_x, expanded_y, expanded_z, expanded_event_timestamp, expanded_accuracy):
+			rows.append({"user": main_row["user"], "timestamp": event_timestamp, "x": x, "y": y, "z": z, "accuracy": accuracy})
+
+		return rows
+
