@@ -147,3 +147,15 @@ class PhoneNumberMapper(object):
 			return row
 		row["number"] = self.phone_book.get(row["number"])
 		return row
+
+
+class JSONHelper(object):
+	def __init__(self, config):
+		self.source_file = config["source_file"]
+
+	def query_database(self, process_row_function):
+		data = json.loads(open(self.source_file, "r").read())
+		for doc in data:
+			process_row_function(doc)
+
+
