@@ -10,6 +10,11 @@ def load_config(config_path=None):
 	return json.loads(open(config_path, "r").read())
 
 
+def get_index(index_name, item):
+	config = load_config()
+	return load_from_db("indices", index_name, ["index"], ["int32"], config["db_host"], query_spec={"raw_value": item})
+
+
 def load_data(data_type, month, config=None):
 	if not config:
 		config = load_config()
@@ -20,12 +25,12 @@ def load_data(data_type, month, config=None):
 						config["db_host"])
 
 
-def load_from_db(db, collection, field_names, field_types, db_host):
+def load_from_db(db, collection, field_names, field_types, db_host, query_spec={}):
 	with Monary(host=db_host["hostname"], username=db_host["username"], password=db_host["password"], database="admin") as monary:
 		arrays = monary.query(
 			db,  # database name
 			collection,  # collection name
-			{},  # query spec
+			query_spec,  # query spec
 			field_names,  # field names (in Mongo record)
 			field_types  # Monary field types (see below)
 		)
