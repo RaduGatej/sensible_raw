@@ -15,4 +15,7 @@ setup(name='sensible_raw',
       author='Radu Gatej',
       author_email='radu.gatej@gmail.com',
       license='MIT',
+      install_requires=[
+          'monary',
+      ],
       zip_safe=False)
