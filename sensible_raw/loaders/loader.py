@@ -13,7 +13,7 @@ def load_config(config_path=None):
 def get_index(index_name, item):
 	config = load_config()
 	columns, data = load_from_db("indices", index_name, ["index"], ["int32"], config["db_host"], query_spec={"raw_value": item})
-	if len(data) == 0:
+	if len(data) == 0 and len(data[0]) == 0:
 		return -1
 	return data[0][0]
 
