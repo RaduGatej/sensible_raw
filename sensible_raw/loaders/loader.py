@@ -21,7 +21,7 @@ def get_index(index_name, raw_value):
 
 def get_raw_value(index_name, indexed_value):
 	config = load_config()
-	columns, data = load_from_db("indices", index_name, ["index"], ["string"], config["db_host"], query_spec={"index": indexed_value})
+	columns, data = load_from_db("indices", index_name, ["index"], ["string:100"], config["db_host"], query_spec={"index": indexed_value})
 	if len(data) == 0 or len(data[0]) == 0:
 		return -1
 
