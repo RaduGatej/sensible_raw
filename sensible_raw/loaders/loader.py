@@ -10,9 +10,18 @@ def load_config(config_path=None):
 	return json.loads(open(config_path, "r").read())
 
 
-def get_index(index_name, item):
+def get_index(index_name, raw_value):
 	config = load_config()
-	columns, data = load_from_db("indices", index_name, ["index"], ["int32"], config["db_host"], query_spec={"raw_value": item})
+	columns, data = load_from_db("indices", index_name, ["index"], ["int32"], config["db_host"], query_spec={"raw_value": raw_value})
+	if len(data) == 0 or len(data[0]) == 0:
+		return -1
+
+	return data[0][0]
+
+
+def get_raw_value(index_name, indexed_value):
+	config = load_config()
+	columns, data = load_from_db("indices", index_name, ["index"], ["string"], config["db_host"], query_spec={"index": indexed_value})
 	if len(data) == 0 or len(data[0]) == 0:
 		return -1
 
