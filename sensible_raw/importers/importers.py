@@ -3,8 +3,8 @@ import helpers
 
 class Importer(object):
 	def __init__(self, config):
-		self.remote_db = helpers.MySQLHelper(config["source_db"])
-		self.local_db = helpers.SensibleMongoHelper(config["target_db"])
+		self.remote_db = helpers.DBHelperFactory().create_helper(config["source_db"])
+		self.local_db = helpers.DBHelperFactory().create_helper(config["target_db"])
 		self.indexer = helpers.FieldIndexerHelper(config["fields_to_index"])
 		try:
 			self.mapper = getattr(helpers, config["mapper"])()
@@ -46,4 +46,4 @@ class SensibleDataImporter(Importer):
 		last_ids = self.last_id_db.query_database()
 		if not last_ids:
 			return 0
-		return max(last_ids, key=lambda x: ["scan_id"])["scan_id"]
+		return max(last_ids, key=lambda x: x["scan_id"])["scan_id"]

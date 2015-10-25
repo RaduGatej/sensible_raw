@@ -181,6 +181,14 @@ class CSVHelper(object):
 			f.close()
 
 
+class DBHelperFactory(object):
+	def __init__(self):
+		self.db_helpers = {"csv": CSVHelper, "mysql": MySQLHelper, "mongo": SensibleMongoHelper, "json": JSONHelper}
+
+	def create_helper(self, db_config):
+		return self.db_helpers[db_config["db_type"]](db_config)
+
+
 class JSONHelper(object):
 	def __init__(self, config):
 		self.source_file = config["source_file"]
