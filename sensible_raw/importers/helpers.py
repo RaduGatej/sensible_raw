@@ -149,6 +149,38 @@ class PhoneNumberMapper(object):
 		return row
 
 
+class CSVHelper(object):
+	INSERT_BATCH_SIZE = 1
+
+	def __init__(self, config):
+		self.db = config["database"]
+		self.insert_batch = defaultdict(list)
+		self.collection_name = config["table"]
+		self.open_files = {}
+
+	def insert_row(self, row):
+		self.insert_batch[self.collection_name].append(",".join([str(value) for value in row.values()]))
+		if len(self.insert_batch[self.collection_name]) == self.INSERT_BATCH_SIZE:
+			filename = self.db + "_" + self.collection_name
+			if filename not in self.open_files:
+				self.open_files[filename] = open(filename, "a")
+			f = self.open_files[filename]
+			f.write("\n".join(self.insert_batch[self.collection_name]) + "\n")
+			f.flush()
+			logging.warning("Inserted %s in file", len(self.insert_batch[self.collection_name]))
+			self.insert_batch[self.collection_name] = []
+
+	def commit_changes(self):
+		for collection, batch in self.insert_batch.items():
+			f = self.open_files[self.db + "_" + collection]
+			f.write("\n".join(batch) + "\n")
+			f.flush()
+			logging.warning("Inserted %s in file", len(batch))
+		self.insert_batch = defaultdict(list)
+		for f in self.open_files.values():
+			f.close()
+
+
 class JSONHelper(object):
 	def __init__(self, config):
 		self.source_file = config["source_file"]
