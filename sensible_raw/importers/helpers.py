@@ -52,7 +52,7 @@ class SensibleMongoHelper(object):
 
 	def __init__(self, config):
 		self.client = MongoClient()
-		self.client.admin.authenticate(config["user"], config["password"])
+		#self.client.admin.authenticate(config["user"], config["password"])
 		self.db = self.client[config["database"]]
 		self.insert_batch = defaultdict(list)
 		self.collection_name = config["table"]
@@ -150,7 +150,7 @@ class PhoneNumberMapper(object):
 
 
 class CSVHelper(object):
-	INSERT_BATCH_SIZE = 1
+	INSERT_BATCH_SIZE = 100
 
 	def __init__(self, config):
 		self.db = config["database"]
@@ -160,10 +160,10 @@ class CSVHelper(object):
 
 	def insert_row(self, row):
 		self.insert_batch[self.collection_name].append(",".join([str(value) for value in row.values()]))
+		filename = self.db + "_" + self.collection_name
+		if filename not in self.open_files:
+			self.open_files[filename] = open(filename, "a")
 		if len(self.insert_batch[self.collection_name]) == self.INSERT_BATCH_SIZE:
-			filename = self.db + "_" + self.collection_name
-			if filename not in self.open_files:
-				self.open_files[filename] = open(filename, "a")
 			f = self.open_files[filename]
 			f.write("\n".join(self.insert_batch[self.collection_name]) + "\n")
 			f.flush()
