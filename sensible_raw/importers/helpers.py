@@ -77,11 +77,11 @@ class SensibleMongoHelper(object):
 class FieldIndexerHelper():
 	DEFAULT_INDEX_FOLDER = "indices"
 
-	def __init__(self, fields_to_index, index_folder=DEFAULT_INDEX_FOLDER):
+	def __init__(self, fields_to_index, index_folder=DEFAULT_INDEX_FOLDER, start_value=0):
 		self.index_folder = index_folder
 		self.field_indices = defaultdict(lambda: defaultdict(self.__integer_field_index))
 		self.__load_indices()
-		self.index_counters = defaultdict(int)
+		self.index_counters = defaultdict(lambda: start_value)
 		self.__load_index_counters()
 		self.fields_to_index = fields_to_index
 		self.current_field = None
