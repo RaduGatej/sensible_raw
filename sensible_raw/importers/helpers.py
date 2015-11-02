@@ -144,10 +144,6 @@ class BluetoothMacMapper(object):
 	def commit(self):
 		self.mac_indexer.save_indexes()
 
-	def map(self, row):
-		row["bt_mac"] = self.map_bt_mac_to_user(row["bt_mac"], row["timestamp"])
-		return row
-
 
 class PhoneNumberMapper(object):
 	def __init__(self):
