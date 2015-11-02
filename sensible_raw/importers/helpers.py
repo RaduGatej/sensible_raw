@@ -159,6 +159,9 @@ class PhoneNumberMapper(object):
 		row["number"] = self.phone_book.get(row["number"])
 		return row
 
+	def commit(self):
+		pass
+
 
 class CSVHelper(object):
 	INSERT_BATCH_SIZE = 100

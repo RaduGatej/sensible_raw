@@ -20,6 +20,8 @@ class Importer(object):
 	def import_data(self):
 		self.remote_db.query_database(self.process_row, after=self.after)
 		self.indexer.save_indexes()
+		if self.mapper:
+			self.mapper.commit()
 		self.local_db.commit_changes()
 
 
