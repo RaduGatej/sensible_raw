@@ -52,7 +52,7 @@ class SensibleMongoHelper(object):
 
 	def __init__(self, config):
 		self.client = MongoClient()
-		#self.client.admin.authenticate(config["user"], config["password"])
+		self.client.admin.authenticate(config["user"], config["password"])
 		self.db = self.client[config["database"]]
 		self.insert_batch = defaultdict(list)
 		self.collection_name = config["table"]
