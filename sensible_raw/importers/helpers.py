@@ -75,9 +75,10 @@ class SensibleMongoHelper(object):
 
 
 class FieldIndexerHelper():
-	INDEX_FOLDER = "indices"
+	DEFAULT_INDEX_FOLDER = "indices"
 
-	def __init__(self, fields_to_index):
+	def __init__(self, fields_to_index, index_folder=DEFAULT_INDEX_FOLDER):
+		self.index_folder = index_folder
 		self.field_indices = defaultdict(lambda: defaultdict(self.__integer_field_index))
 		self.__load_indices()
 		self.index_counters = defaultdict(int)
@@ -90,8 +91,8 @@ class FieldIndexerHelper():
 			self.index_counters[index_name] = max(indices.values())
 
 	def __load_indices(self):
-		for filename in os.listdir(self.INDEX_FOLDER):
-			index = json.loads(open(self.INDEX_FOLDER + "/" + filename, "r").read())
+		for filename in os.listdir(self.index_folder):
+			index = json.loads(open(self.index_folder + "/" + filename, "r").read())
 			index_name = filename.split(".")[0]
 			self.field_indices[index_name] = defaultdict(self.__integer_field_index, index)
 
@@ -109,7 +110,7 @@ class FieldIndexerHelper():
 	def save_indexes(self):
 		for index_name, indices in self.field_indices.items():
 			print indices
-			f = open(self.INDEX_FOLDER + "/" + index_name + ".json", "w")
+			f = open(self.index_folder + "/" + index_name + ".json", "w")
 			f.write(json.dumps(dict(indices)))
 			f.close()
 
