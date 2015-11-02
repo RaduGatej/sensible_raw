@@ -122,17 +122,27 @@ class FieldIndexerHelper():
 class BluetoothMacMapper(object):
 	def __init__(self):
 		self.device_inventory = json.loads(open("device_inventory", "r").read())
+		self.mac_indexer = FieldIndexerHelper([["bt_mac", "bt_mac"]], index_folder="mac_mapper", start_value=10000)
 
 	def map_bt_mac_to_user(self, bt_mac, timestamp):
 		inventory_entries = self.device_inventory.get(bt_mac)
 		if not inventory_entries:
-			return -1
+			return False, bt_mac
 
 		for entry in inventory_entries:
 			if entry['start'] <= int(time.mktime(timestamp.timetuple())) <= entry['end']:
-				return entry['user']
+				return True, entry['user']
 
-		return -1
+		return False, bt_mac
+
+	def map(self, row):
+		is_username, mapped_value = self.map_bt_mac_to_user(row["bt_mac"], row["timestamp"])
+		if not is_username:
+			return self.mac_indexer.index_fields(row)
+		return row
+
+	def commit(self):
+		self.mac_indexer.save_indexes()
 
 	def map(self, row):
 		row["bt_mac"] = self.map_bt_mac_to_user(row["bt_mac"], row["timestamp"])
