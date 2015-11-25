@@ -149,15 +149,17 @@ class BluetoothMacMapper(object):
 class PhoneNumberMapper(object):
 	def __init__(self):
 		self.phone_book = json.loads(open("phone_book", "r").read())
+		self.phone_number_indexer = FieldIndexerHelper([["number", "number"]], index_folder="phone_mapper", start_value=10000)
 
 	def map(self, row):
 		if not self.phone_book.get(row['number']):
-			return row
+			return self.phone_number_indexer.index_fields(row)
+
 		row["number"] = self.phone_book.get(row["number"])
 		return row
 
 	def commit(self):
-		pass
+		self.phone_number_indexer.save_indexes()
 
 
 class CSVHelper(object):
