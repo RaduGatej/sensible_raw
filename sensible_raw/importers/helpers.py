@@ -109,7 +109,6 @@ class FieldIndexerHelper():
 
 	def save_indexes(self):
 		for index_name, indices in self.field_indices.items():
-			print indices
 			f = open(self.index_folder + "/" + index_name + ".json", "w")
 			f.write(json.dumps(dict(indices)))
 			f.close()
