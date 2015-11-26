@@ -177,6 +177,9 @@ class CSVHelper(object):
 		filename = self.db + "_" + self.collection_name
 		if filename not in self.open_files:
 			self.open_files[filename] = open(os.path.join(self.hostname + filename), "a")
+			self.open_files[filename].write(",".join(row.keys()) + "\n")
+			self.open_files[filename].flush()
+
 		if len(self.insert_batch[self.collection_name]) == self.INSERT_BATCH_SIZE:
 			f = self.open_files[filename]
 			f.write("\n".join(self.insert_batch[self.collection_name]) + "\n")
