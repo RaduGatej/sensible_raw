@@ -1,5 +1,8 @@
 import helpers
+import logging
 
+
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 class Importer(object):
 	def __init__(self, config):
@@ -8,7 +11,8 @@ class Importer(object):
 		self.indexer = helpers.FieldIndexerHelper(config["fields_to_index"])
 		try:
 			self.mapper = getattr(helpers, config["mapper"])()
-		except:
+		except BaseException, e:
+			logging.warn("Couldn't load mapper due to following error: " + e.message)
 			self.mapper = None
 		self.after = None
 
