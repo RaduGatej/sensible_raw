@@ -1,4 +1,3 @@
-import base64
 from collections import defaultdict
 import json
 import logging
@@ -76,12 +75,13 @@ class SensibleMongoHelper(object):
 
 
 class FieldIndexerHelper():
-	INDEX_FOLDER = "indices"
+	DEFAULT_INDEX_FOLDER = "indices"
 
-	def __init__(self, fields_to_index):
+	def __init__(self, fields_to_index, index_folder=DEFAULT_INDEX_FOLDER, start_value=0):
+		self.index_folder = index_folder
 		self.field_indices = defaultdict(lambda: defaultdict(self.__integer_field_index))
 		self.__load_indices()
-		self.index_counters = defaultdict(int)
+		self.index_counters = defaultdict(lambda: start_value)
 		self.__load_index_counters()
 		self.fields_to_index = fields_to_index
 		self.current_field = None
@@ -91,8 +91,8 @@ class FieldIndexerHelper():
 			self.index_counters[index_name] = max(indices.values())
 
 	def __load_indices(self):
-		for filename in os.listdir(self.INDEX_FOLDER):
-			index = json.loads(open(self.INDEX_FOLDER + "/" + filename, "r").read())
+		for filename in os.listdir(self.index_folder):
+			index = json.loads(open(self.index_folder + "/" + filename, "r").read())
 			index_name = filename.split(".")[0]
 			self.field_indices[index_name] = defaultdict(self.__integer_field_index, index)
 
@@ -109,8 +109,7 @@ class FieldIndexerHelper():
 
 	def save_indexes(self):
 		for index_name, indices in self.field_indices.items():
-			print indices
-			f = open(self.INDEX_FOLDER + "/" + index_name + ".json", "w")
+			f = open(self.index_folder + "/" + index_name + ".json", "w")
 			f.write(json.dumps(dict(indices)))
 			f.close()
 
@@ -121,33 +120,100 @@ class FieldIndexerHelper():
 
 class BluetoothMacMapper(object):
 	def __init__(self):
-		self.device_inventory = json.loads(open("device_inventory", "r").read())
+		self.device_inventory = json.loads(open("device_inventory.json", "r").read())
+		self.mac_indexer = FieldIndexerHelper([["bt_mac", "bt_mac"]], index_folder="mac_mapper", start_value=10000)
 
 	def map_bt_mac_to_user(self, bt_mac, timestamp):
 		inventory_entries = self.device_inventory.get(bt_mac)
 		if not inventory_entries:
-			return -1
+			return False, bt_mac
 
 		for entry in inventory_entries:
 			if entry['start'] <= int(time.mktime(timestamp.timetuple())) <= entry['end']:
-				return entry['user']
+				return True, entry['user']
 
-		return -1
+		return False, bt_mac
 
 	def map(self, row):
-		row["bt_mac"] = self.map_bt_mac_to_user(row["bt_mac"], row["timestamp"])
+		is_username, mapped_value = self.map_bt_mac_to_user(row["bt_mac"], row["timestamp"])
+		if not is_username:
+			return self.mac_indexer.index_fields(row)
+
+		row['bt_mac'] = mapped_value
 		return row
+
+	def commit(self):
+		self.mac_indexer.save_indexes()
 
 
 class PhoneNumberMapper(object):
 	def __init__(self):
 		self.phone_book = json.loads(open("phone_book", "r").read())
+		self.phone_number_indexer = FieldIndexerHelper([["number", "number"]], index_folder="phone_mapper", start_value=10000)
 
 	def map(self, row):
 		if not self.phone_book.get(row['number']):
-			return row
+			return self.phone_number_indexer.index_fields(row)
+
 		row["number"] = self.phone_book.get(row["number"])
 		return row
+
+	def commit(self):
+		self.phone_number_indexer.save_indexes()
+
+
+class CSVHelper(object):
+	INSERT_BATCH_SIZE = 100000
+
+	def __init__(self, config):
+		self.hostname = os.path.join(config["hostname"], '')
+		self.db = config["database"]
+		self.insert_batch = defaultdict(list)
+		self.collection_name = config["table"]
+		self.open_files = {}
+
+	def insert_row(self, row):
+		self.insert_batch[self.collection_name].append(",".join([str(value) for value in row.values()]))
+		filename = self.db + "_" + self.collection_name
+		if filename not in self.open_files:
+			self.open_files[filename] = open(os.path.join(self.hostname + filename), "a")
+			self.open_files[filename].write(",".join(row.keys()) + "\n")
+			self.open_files[filename].flush()
+
+		if len(self.insert_batch[self.collection_name]) == self.INSERT_BATCH_SIZE:
+			f = self.open_files[filename]
+			f.write("\n".join(self.insert_batch[self.collection_name]) + "\n")
+			f.flush()
+			logging.warning("Inserted %s in file", len(self.insert_batch[self.collection_name]))
+			self.insert_batch[self.collection_name] = []
+
+	def commit_changes(self):
+		for collection, batch in self.insert_batch.items():
+			f = self.open_files[self.db + "_" + collection]
+			f.write("\n".join(batch) + "\n")
+			f.flush()
+			logging.warning("Inserted %s in file", len(batch))
+		self.insert_batch = defaultdict(list)
+		for f in self.open_files.values():
+			f.close()
+
+
+class DBHelperFactory(object):
+	def __init__(self):
+		self.db_helpers = {"csv": CSVHelper, "mysql": MySQLHelper, "mongo": SensibleMongoHelper, "json": JSONHelper}
+
+	def create_helper(self, db_config):
+		return self.db_helpers[db_config["db_type"]](db_config)
+
+
+class JSONHelper(object):
+	def __init__(self, config):
+		self.source_file = config["source_file"]
+
+	def query_database(self, process_row_function):
+		data = json.loads(open(self.source_file, "r").read())
+		for doc in data:
+			process_row_function(doc)
 
 
 class AccelerometerDataRowExpander(object):
