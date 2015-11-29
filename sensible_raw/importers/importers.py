@@ -17,8 +17,9 @@ class Importer(object):
 
 		try:
 			self.row_expander = getattr(helpers, config["expander"])()
-		except:
+		except BaseException, e:
 			self.row_expander = None
+			logging.warn("Couldn't load expander due to following error: " + e.message)
 		self.after = None
 
 	def process_row(self, row):
@@ -32,9 +33,11 @@ class Importer(object):
 	def expand_row(self, main_row):
 		if self.row_expander:
 			expanded_row = []
+
 			try:
 				expanded_row = self.row_expander.expand(main_row)
-			except:
+			except helpers.RowExpanderException, e:
+				#logging.error("Exception while expanding row: " + str(e.message))
 				return False
 
 			for row in expanded_row:
@@ -60,9 +63,9 @@ class SensibleDataImporter(Importer):
 
 	def process_row(self, row):
 		self.local_db.collection_name = row["timestamp"].strftime("%B_%Y").lower()
+		Importer.process_row(self, row)
 		if row["id"] > self.current_id:
 			self.current_id = row["id"]
-		Importer.process_row(self, row)
 
 	def import_data(self):
 		Importer.import_data(self)
