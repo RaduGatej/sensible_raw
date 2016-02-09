@@ -173,13 +173,14 @@ class CSVHelper(object):
 		self.insert_batch = defaultdict(list)
 		self.collection_name = config["table"]
 		self.open_files = {}
+		self.separator = config.get("separator", ",")
 
 	def insert_row(self, row):
-		self.insert_batch[self.collection_name].append(",".join([str(value) for value in row.values()]))
+		self.insert_batch[self.collection_name].append(self.separator.join([str(value) for value in row.values()]))
 		filename = self.db + "_" + self.collection_name
 		if filename not in self.open_files:
 			self.open_files[filename] = open(os.path.join(self.hostname + filename), "a")
-			self.open_files[filename].write(",".join(row.keys()) + "\n")
+			self.open_files[filename].write(self.separator.join(row.keys()) + "\n")
 			self.open_files[filename].flush()
 
 		if len(self.insert_batch[self.collection_name]) == self.INSERT_BATCH_SIZE:
