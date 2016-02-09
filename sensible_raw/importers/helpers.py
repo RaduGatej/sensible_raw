@@ -53,7 +53,7 @@ class SensibleMongoHelper(object):
 	INSERT_BATCH_SIZE = 100000
 
 	def __init__(self, config):
-		self.client = MongoClient()
+		self.client = MongoClient(config["hostname"])
 		self.client.admin.authenticate(config["user"], config["password"])
 		self.db = self.client[config["database"]]
 		self.insert_batch = defaultdict(list)
