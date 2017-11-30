@@ -22,6 +22,11 @@ def get_index(index_name, raw_value):
     return data[0][0]
 
 
+def docs(data_type):
+    pandas.set_option('display.max_colwidth', -1)
+    return pandas.read_csv("sensible_raw/documentation_files/" + data_type + ".csv")
+
+
 def get_raw_value(index_name, indexed_value):
     config = load_config()
     columns, data = load_from_db("indices", index_name, ["raw_value"], ["string:100"], config["db_host"],
