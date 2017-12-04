@@ -24,7 +24,8 @@ def get_index(index_name, raw_value):
 
 def docs(data_type):
     pandas.set_option('display.max_colwidth', -1)
-    return pandas.read_csv("documentation_files/" + data_type + ".csv")
+    documentation_folder = os.path.abspath(__file__ + "/../../")
+    return pandas.read_csv(os.path.join(documentation_folder, "documentation_files", data_type + ".csv"))
 
 
 def get_raw_value(index_name, indexed_value):
