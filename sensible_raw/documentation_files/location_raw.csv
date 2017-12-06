@@ -1,0 +1,2 @@
+"accuracy","lat","lon","provider","timestamp","user"
+"Accuracy of the location in meters","Latitude of the location","Longitude of the location","Provider of the location sample: 1=network, 2=fused, 3=gps.","Unix-time of the sample in milliseconds","Unique identifier for each user. Note: it is an id, not a counter for users. Numbers higher than 850 doesn't mean there are more users"
