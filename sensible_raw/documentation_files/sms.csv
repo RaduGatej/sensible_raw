@@ -1,0 +1,2 @@
+"address","timestamp","type","user"
+"Identifier for the caller/callee (depends on type).  > 0 values represent users from the study and match the user_id column, values < 0 represent devices outside the study.","Unix-time of the sample in milliseconds","Type of the call event: 1 - sent message, 2 - received message, 3 - draft message.","Unique identifier for each user. Note: it is an id, not a counter for users. Numbers higher than 850 doesn't mean there are more users"

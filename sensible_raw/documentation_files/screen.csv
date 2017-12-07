@@ -1,0 +1,2 @@
+"screen_on","timestamp","user"
+"1 - screen was turned on, 0 - screen was turned off","Unix-time of the sample in milliseconds","Unique identifier for each user. Note: it is an id, not a counter for users. Numbers higher than 850 doesn't mean there are more users"
