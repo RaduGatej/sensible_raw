@@ -15,6 +15,8 @@ setup(name='sensible_raw',
       author='Radu Gatej',
       author_email='radu.gatej@gmail.com',
       license='MIT',
+      package_data={'': ['*.csv']},
+      include_package_data=True,
       install_requires=[
           'monary',
       ],
