@@ -9,7 +9,7 @@ for d, _, _ in os.walk('sensible_raw'):
         packages.append(d.replace(os.path.sep, '.'))
 
 setup(name='sensible_raw',
-      version='0.2',
+      version='0.3',
       packages = packages,
       description='Raw data management for sensibledtu project',
       author='Radu Gatej',
